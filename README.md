@@ -5,7 +5,7 @@ This project was created in order to demonstrate te ability to read in and manag
 # Getting Started
 
 ### Downloading Nutritional Data
-To download and assemble the nutritional data all you need to do is run the buildall.sh file. Before running this file it is important to make sure that you have both `curl` and `unzip` installed on your command line. This can easily be done using the commands `sudo apt-get install unzip` and `sudo apt-get curl`. After installing these two packages and running the buildall.sh file the data should be prepared properly for the program.
+To download and assemble the nutritional data all you need to do is run the buildall.sh file. Before running this file it is important to make sure that you have both `curl` and `unzip` installed on your command line. This can easily be done using the commands `sudo apt-get install unzip` and `sudo apt-get install curl`. After installing these two packages and running the buildall.sh file the data should be prepared properly for the program.
 
 ### Starting the Program
 A make file is included to make this as easy as possible. First ensure that you have already run the buildall.sh file and that functions.c, functions.h, and main.c are included in the file folder. Next you can type 'make' and hit enter. The program will compile to the c11 standard and will create an executable titled 'main.exe'. Run this executable to start the program and you should be good to go!
