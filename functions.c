@@ -14,13 +14,14 @@
 ///// Taking Input /////
 
 char *getInput(int MAXSIZE){
+    //A custom input function was created to prevent the user from overflowing the standard input. This function limits the user to a certain length that cannot be surpassed thus preventing said overflow.
     char *input = (char*) malloc (MAXSIZE*sizeof(char));
     int ch,valid = 0, digits = 0, alpha = 0;
     while(!valid){
         if(fgets(input, MAXSIZE, stdin)){
             digits = 0;
             alpha = 0;
-            //see how many alphanumeric versus how many numeric
+            //The comparison between alphanumeric and numeric characters allows the program to determine what is good and what is bad input which helps exclude possible errors from things such as arrow key presses or backspaces.
             for(int i = 0; i < strlen(input); i++){
                 if (isdigit(input[i])){
                     digits++;
@@ -50,6 +51,7 @@ char *getInput(int MAXSIZE){
 }
 
 char *strtok_single (char * str, char const * delims){
+  // strtok has trouble handling multiple delimeters in a row. This code was taken and modified from a Stack Exchanage post the link to which can be found in the readme.md.
   static char  * src = NULL;
   char  *  p,  * ret = 0;
 
@@ -73,6 +75,7 @@ char *strtok_single (char * str, char const * delims){
 }
 
 char *strlwr(char * string){
+    //The strlwr function is not standard in c11 so it was necessary to make my own.
     for (int i = 0; i < strlen(string); i++){
         string[i] = tolower(string[i]);
     }
@@ -83,6 +86,7 @@ char *strlwr(char * string){
 ///// Binary Search Tree Functionatlity /////
 
 void printNode(struct node *p, char *use){
+    //Prints the nodes when they are created, retrieved, updated, or deleted.
     if (p != NULL){
         printf("\nProduct Name: %s\n", p->ProductName);
         printf("Manufacturer: %s\n",p->Manufacturer);
@@ -100,11 +104,11 @@ void printNode(struct node *p, char *use){
 }
 
 struct node* insert(struct node *root, char *ProductName, char *Manufacturer, char *ServingSize1Units, char *ServingSize2Units, double Energy, double Carbs, double Fat, double Protein, double ServingSize1, double ServingSize2, int ProductID, char *Date, double Servings){
-    //searching for the place to insert
     
-    //Create a new node if root == NULL
+    //searching for the place to insert
     if(root==NULL)
-    {    
+    {   
+        //Create a new node if root == NULL 
         root = malloc(sizeof(struct node));
 
         root->ProductName = (char*) malloc (NAMELENGTH*sizeof(char));
@@ -138,12 +142,12 @@ struct node* insert(struct node *root, char *ProductName, char *Manufacturer, ch
 
     }
     else if(0 > strncmp(ProductName, root->ProductName, NAMELENGTH))
-    { // x is smaller should be inserted to left
+    { // The input is smaller so it should be to the left
         root->left_child = insert(root->left_child, ProductName, Manufacturer, ServingSize1Units, ServingSize2Units, Energy, Carbs, Fat, Protein, ServingSize1, ServingSize2, ProductID, Date, Servings);
     }
 
     else
-    { // x is greater. Should be inserted to right
+    { // The input is larger so it should be to the right
         root->right_child = insert(root->right_child, ProductName, Manufacturer, ServingSize1Units, ServingSize2Units, Energy, Carbs, Fat, Protein, ServingSize1, ServingSize2, ProductID, Date, Servings);
     }
     return root;
@@ -154,14 +158,17 @@ struct node* update(struct node *root, char *ProductName, char *Date, double Ser
     if(root==NULL){
         return NULL;
     }
+
     if (0 < strncmp(ProductName, root->ProductName, NAMELENGTH)){
+        // The input is larger so it should be input to the right
         update(root->right_child, ProductName, Date, Servings, newDate, newServings);
     }
     else if(0 > strncmp(ProductName, root->ProductName, NAMELENGTH)){
+        // The input is smaller so it should be input to the left
         update(root->left_child, ProductName, Date, Servings, newDate, newServings);
     }
     else
-    {
+    {   // The node must have the correct name but must also have the correct date and number of servings because there may be multiple entries with the same name.
         if (strncmp(Date, root->Date, NUMLENGTH) == 0 && Servings == root->Servings ){
             strncpy(root->Date, newDate, NUMLENGTH);
             root->Servings = newServings;
@@ -172,8 +179,8 @@ struct node* update(struct node *root, char *ProductName, char *Date, double Ser
             printf("\nThe node has been updated to:\n");
             printNode(root, "log");
         }
-        //It might be the right food, but not the right entry
         else {
+            // Entries that have the same name are inserted to the right of the last one
             update(root->right_child, ProductName, Date, Servings, newDate, newServings);
         }
     }
@@ -183,8 +190,8 @@ struct node* update(struct node *root, char *ProductName, char *Date, double Ser
 struct node* find_minimum(struct node *root){
     if(root == NULL)
         return NULL;
-    else if(root->left_child != NULL) // node with minimum value will have no left child
-        return find_minimum(root->left_child); // left most element will be minimum
+    else if(root->left_child != NULL) // The smallest node will not have a left chile
+        return find_minimum(root->left_child); // The farthest left node will be the smallest
     return root;
 }
 
@@ -194,22 +201,24 @@ struct node* delete(struct node *root, char *ProductName, char *Date, double Ser
         return NULL;
     }
     if (0 < strncmp(ProductName, root->ProductName, NAMELENGTH)){
+        // The input is larger so it should be to the right
         root->right_child = delete(root->right_child, ProductName, Date, Servings);
     }
     else if(0 > strncmp(ProductName, root->ProductName, NAMELENGTH)){
+        // The input is smaller so it should be to the left
         root->left_child = delete(root->left_child, ProductName, Date, Servings);
     }
     else
     {
         if (strncmp(Date, root->Date, NUMLENGTH) == 0 && Servings == root->Servings ){
-            //No Children
+            //No Children - The root is NULL.
             if(root->left_child==NULL && root->right_child==NULL)
             {
                 free(root);
                 return NULL;
             }
 
-            //One Child
+            //One Child - The child becomes the root.
             else if(root->left_child==NULL || root->right_child==NULL)
             {
                 struct node *temp = malloc(sizeof(struct node));
@@ -223,9 +232,10 @@ struct node* delete(struct node *root, char *ProductName, char *Date, double Ser
                 return temp;
             }
 
-            //Two Children
+            //Two Children - The smallest sub-child becomes the root.
             else
             {
+
                 struct node *temp = malloc(sizeof(struct node));
                 temp = find_minimum(root->right_child);
                 strncpy(root->ProductName, temp->ProductName, NAMELENGTH);
@@ -246,6 +256,7 @@ struct node* delete(struct node *root, char *ProductName, char *Date, double Ser
             }
         }
         else {
+            //If it is the correct name but not the correct entry we must continue down the right tree.
             root->right_child = delete(root->right_child, ProductName, Date, Servings);
         }
 
@@ -254,21 +265,23 @@ struct node* delete(struct node *root, char *ProductName, char *Date, double Ser
 }
 
 int deleteBST(struct node *root){
-    if(root != NULL) // checking if the root is not null
+    //Easy was to help clean out memory by deleting old search trees when they are no longer needed.
+    if(root != NULL)
     {
-        deleteBST(root->left_child); // visiting left child
-        deleteBST(root->right_child);// visiting right child
-        free(root); // printing ProductName at root
+        deleteBST(root->left_child);
+        deleteBST(root->right_child);
+        free(root); // Freeing the parent of the children last
     }
     return 0;
 }
 
 void writeFromBST(struct node *root, FILE *fp){
-    if(root!=NULL) // checking if the root is not null
+    // The function used to write to the log file.
+    if(root!=NULL)
     {
-        writeFromBST(root->left_child, fp); // visiting left child
+        writeFromBST(root->left_child, fp);
         fprintf(fp, "%d~%s~%s~%f~%f~%f~%f~%f~%s~%f~%s~%s~%f\n", root->ProductID, root->ProductName, root->Manufacturer, root->Energy, root->Carbs, root->Fat, root->Protein, root->ServingSize1, root->ServingSize1Units, root->ServingSize2, root->ServingSize2Units, root->Date, root->Servings);
-        writeFromBST(root->right_child, fp);// visiting right child
+        writeFromBST(root->right_child, fp);
     }
 }
 
@@ -292,7 +305,7 @@ struct node *readIntoBST(struct node *tree, char *filename, char* reading){
 
     int flagDB = fscanf(fp, "%[^\n]%*[\n]", lineDB);
     while(flagDB != EOF){
-
+        //Using a modified str_tok to split up the data by the '~' delimeter.
         strncpy(buffProductID, strtok_single(lineDB, "~"), NUMLENGTH);
         strncpy(buffProductName, strtok_single(NULL, "~"), NAMELENGTH);
         strncpy(buffManufacturer,strtok_single(NULL, "~"),NAMELENGTH);
@@ -307,7 +320,7 @@ struct node *readIntoBST(struct node *tree, char *filename, char* reading){
             strncpy(buffServingSize2Units,strtok_single(NULL, "~"),SSLENGTH);
             strncpy(buffDate, strtok_single(NULL, "~"), NUMLENGTH);
             strncpy(buffServings, strtok_single(NULL, "~"), NUMLENGTH);
-
+            //Insert the newly read in node.
             tree = insert(tree, buffProductName, buffManufacturer, buffServingSize1Units, buffServingSize2Units, atof(buffEnergy), atof(buffCarb), atof(buffFat), atof(buffProtein), atof(buffServingSize1), atof(buffServingSize2), atoi(buffProductID), buffDate, atof(buffServings));
         }
         else  {
@@ -323,7 +336,7 @@ struct node *readIntoBST(struct node *tree, char *filename, char* reading){
             nutrientScale = atof(buffServingSize1)/100;
             strncpy(buffDate, "1900-01-01", NUMLENGTH);
             strncpy(buffServings, "0", NUMLENGTH);
-
+            //Insert the newly read in node. This is separate from the other one because of the nutrientScale that is used for the database.
             tree = insert(tree, buffProductName, buffManufacturer, buffServingSize1Units, buffServingSize2Units, atof(buffEnergy) * nutrientScale, atof(buffCarb) * nutrientScale, atof(buffFat) * nutrientScale, atof(buffProtein) * nutrientScale, atof(buffServingSize1), atof(buffServingSize2), atoi(buffProductID), buffDate, atof(buffServings));
         }
 
@@ -332,6 +345,7 @@ struct node *readIntoBST(struct node *tree, char *filename, char* reading){
 
     fclose(fp); 
 
+    //Free up all of the memory that had previously been malloced
     free(buffProductID); 
     free(buffProductName); 
     free(buffManufacturer); 
@@ -354,9 +368,11 @@ struct node *readIntoBST(struct node *tree, char *filename, char* reading){
 ///// Search Functions /////
 
 struct node* dfs(struct node *root, struct node *searchresults, char *term, char *searchby){
+    //A depth first search to use when no string started with the exact matching string that was searched for.
     char *temp = (char*) malloc (NAMELENGTH*sizeof(char));
-    if(root!=NULL) // checking if the root is not null
+    if(root!=NULL)
     {
+        //The DFS can search by food or date with the small modifications made below.
         if(strncmp(searchby, "food", NAMELENGTH) == 0){
             strncpy(temp, root->ProductName, NAMELENGTH);
             strlwr(temp);
@@ -367,6 +383,7 @@ struct node* dfs(struct node *root, struct node *searchresults, char *term, char
 
         searchresults = dfs(root->left_child, searchresults, term, searchby);
         if (strstr(temp, term) != NULL){
+            //If a match is found, insert the node.
             searchresults = insert(searchresults, root->ProductName, root->Manufacturer, root->ServingSize1Units, root->ServingSize2Units, root->Energy, root->Carbs, root->Fat, root->Protein, root->ServingSize1, root->ServingSize2, root->ProductID, root->Date, root->Servings);
         }
         searchresults = dfs(root->right_child, searchresults, term, searchby);// visiting right child
@@ -378,6 +395,7 @@ struct node* dfs(struct node *root, struct node *searchresults, char *term, char
 struct node* search(struct node *root, struct node *searchresults, char *term){
     if(root==NULL)
     {    
+        //If the tree is empty return the current search results
         return searchresults;
     }
 
@@ -385,17 +403,16 @@ struct node* search(struct node *root, struct node *searchresults, char *term){
     strncpy(tempName, root->ProductName, NAMELENGTH);
     strlwr(tempName);
     if(0 > strncmp(tempName, term, strlen(term)))
-    { // x is smaller should be inserted to left
+    { // The input is smaller so it should be to the left
         searchresults = search(root->right_child, searchresults, term);
     }
     else if(0 < strncmp(tempName, term, strlen(term)))
-    { // x is greater. Should be inserted to right
+    { // The input is greater so it should be to the right
         searchresults = search(root->left_child, searchresults, term);
     }
     else {
         searchresults = insert(searchresults, root->ProductName, root->Manufacturer, root->ServingSize1Units, root->ServingSize2Units, root->Energy, root->Carbs, root->Fat, root->Protein, root->ServingSize1, root->ServingSize2, root->ProductID, root->Date, root->Servings);
-        //When the term matches the product name we must check both because for some items the letters following what matches cause valid search results to go to both sides.
-        //Consider changing up string compare to only include the length of the root product name to the insertiong product name (ex. "GREEK YOGURT" compared to "GREEK YOGURT SMOOTHIE", would now still be equal to 0 and go the right instead of the left.)
+        //When the term matches the product name we must check both because for some items the letters following what matches cause valid search results to go to both sides. This occurs because a longer string such as "GREEK YOGURT SMOOTHIE" would go to the 'incorrect' side of the tree even though it is still valid and will contain other valid search results.
         searchresults = search(root->left_child, searchresults, term);
         searchresults = search(root->right_child, searchresults, term);
     }
@@ -404,6 +421,8 @@ struct node* search(struct node *root, struct node *searchresults, char *term){
 }
 
 int printOptions(struct node *root, int counter, char *use, int logProductName, int logManufacturer, int logDate, int logServings, int dbProductName, int dbManufacturer){
+    // A function to easily print the options that were found by the search results.
+    // The '*'s in the printf statements allow the program to control dynamically how long each string should be.
     char *buffer = (char*) malloc (NUMLENGTH*sizeof(char));
     if(root!=NULL) {
         if (strncmp(use, "log", NAMELENGTH) == 0){
@@ -443,6 +462,7 @@ int printOptions(struct node *root, int counter, char *use, int logProductName, 
 int selectOption(struct node *p, struct node *selected, int counter, int userSelection){
     if (p != NULL)
     {
+        //Use a DFS in order to find which of the foods was selected.
         counter = selectOption(p->left_child, selected, counter, userSelection);
         counter = counter + 1;
         if (counter == userSelection){
@@ -522,19 +542,18 @@ char * validateDate(char *date){
         }
 
         else{
-            
-
+            //At this point the program knows that the date is in the right format. Now it will validate the actual contents of the date.
             year = atoi(strtok(tempdate, "-"));
             month = atoi(strtok(NULL, "-"));
             day = atoi(strtok(NULL, "-"));
 
             //Year is not older than the oldest living person
             if(year < 1900){
-                printf("\nIf you had consumed this food before 1900 that would make you the oldest person still alive! You accidentally mistype the date that you ate this food.\n");
+                printf("\nIf you had consumed this food before 1900 that would make you the oldest person still alive! Please enter a date that is after 1900 but not after today.\n");
             }
             //Year is not in the future
             else if (year > currentYear){
-                printf("\nAre you from the future? I am guessing not. Please enter the date you consumed the food you are trying to record.\n");
+                printf("\nAre you from the future? I am guessing not. Please enter a date that is after 1900 but not after today.\n");
             }
             //The month is not larger than the possible amount of months
             else if (month > 12){
@@ -542,13 +561,15 @@ char * validateDate(char *date){
             }
             //Month is not in the future of the current year should it be selected
             else if (month > currentMonth && year == currentYear){
-                printf("\nAre you from the future? I am guessing not. Please enter the date you consumed the food you are trying to record.\n");
+                printf("\nAre you from the future? I am guessing not. Please enter a date that is after 1900 but not after today.\n");
             }
+            //Does that specific day exists in that specfic month?
             else if (((month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) && (day > 31)) || ((month == 4 || month == 6 || month == 9 || month == 11) && (day > 30)) || ((month == 2) && (day > 28) && (year%4 != 0)) || ((month == 2) && (day > 29) && (year%4 == 0))){
                 printf("\nThat is not a valid day in this month! %d\n", month);
             }
+            //Is the day that has been selected in the future of this month?
             else if (day > currentDay && month == currentMonth && year == currentYear){
-                printf("\nAre you from the future? I am guessing not. Please enter the date you consumed the food you are trying to record.\n");
+                printf("\nAre you from the future? I am guessing not. Please enter a date that is after 1900 but not after today.\n");
             }
             else {
                 valid = 1;
@@ -568,16 +589,19 @@ int validateNum (char * numStr){
 
     while (!valid){
         digits = 0;
+        //Count the number of digits in the string
         for(int i = 0; i < strlen(numStr); i++){
             if (isdigit(numStr[i])){
                 digits++;
             }
         }
+        //If the number of digits present represents the length of the string then the string must be just an integer.
         if(digits == strlen(numStr)){
             if(atoi(numStr)>0){
                 valid = 1;              
             }
         }
+        //Prompt the user to enter proper input.
         else {
             printf("\nPlease enter a valid integer. No alphanumeric characters or decimal places will be accepted and the number must be above 0.\n");
             numStr = getInput(NUMLENGTH);
@@ -594,14 +618,17 @@ double validateFloat (char * numStr){
 
     while (!valid){
         digits = 0;
+        //Count the number of digits in the string
         for(int i = 0; i < strlen(numStr); i++){
             if (isdigit(numStr[i])){
                 digits++;
             }
         }
+        //Limit the length of the float to 10 digits
         if (strlen(numStr) > 10){
             printf("\nThat is too many digits. The maximum amount of numbers you can enter is 10 so you may need to round your decimal places.\n");
         }
+        //The number can be an integer or it must contain only one alphanumeric non-numeric character and that is the '.'.
         else if((digits == strlen(numStr)) || ((digits == strlen(numStr) - 1) && strpbrk(tempStr, ".") && strlen(numStr) != 1)){
             if (atof(numStr) > 0){
                 valid = 1;
@@ -611,6 +638,7 @@ double validateFloat (char * numStr){
             }
             
         }
+        //Prompt the user to enter proper input.
         if (valid == 0){
             printf("\nPlease enter a valid decimal number.\n");
             numStr = getInput(NUMLENGTH);
@@ -626,9 +654,11 @@ char * validateBinary(char * input, char *choice1, char *choice2){
     int valid = 0;
 
     while (!valid){
+        //Check to see if the input matches either of the possible selections.
         if(strncmp(input, choice1, LINELENGTH) == 0 || strncmp(input, choice2, LINELENGTH) == 0){
             valid = 1;
         }
+        //Prompt the user to enter proper input.
         else  {
             printf("\nPlease enter either '%s' or '%s'.\n", choice1, choice2);
             input = getInput(NUMLENGTH);
@@ -641,9 +671,11 @@ int validateSelection(int input, int max){
     int valid = 0;
 
     while (!valid){
+        //Make sure the number is in the range of possible selections.
         if(input <= max && input > 0){
             valid = 1;
         }
+        //Prompt the user to enter proper input.
         else {
             printf("\nThat number is not in the range of potential selection options. Please enter a number from 1 to %d.\n", max);
             input = validateNum(getInput(NUMLENGTH));
@@ -661,6 +693,7 @@ int readSettings(char *filename, int *logProductName, int *logManufacturer, int 
 
     fp = fopen(filename, "ab+");
 
+    //Check the file size
     long fsize = 0;
     if(fp != NULL) 
     {
@@ -671,6 +704,7 @@ int readSettings(char *filename, int *logProductName, int *logManufacturer, int 
 
     rewind(fp); //ab+ opens the file and points to the end, rewind it to the top
 
+    //If the file is empty write/create a file containing the default settings
     if (fsize == 0){
         fprintf(fp, "%d\n", *logProductName);
         fprintf(fp, "%d\n", *logManufacturer);
@@ -679,6 +713,7 @@ int readSettings(char *filename, int *logProductName, int *logManufacturer, int 
         fprintf(fp, "%d\n", *dbProductName);
         fprintf(fp, "%d\n", *dbManufacturer);
     }
+    //If the file is not empty read the file containing the settings
     else {
         fscanf(fp, "%d", logProductName);
         fscanf(fp, "%d", logManufacturer);
@@ -698,6 +733,7 @@ int updateSettings(char *filename, int *logProductName, int *logManufacturer, in
     remove(filename);
     fp = fopen(filename, "ab+");
 
+    //Rewrite the file to contain the new settings so they can be saved over multiple runs.
     fprintf(fp, "%d\n", *logProductName);
     fprintf(fp, "%d\n", *logManufacturer);
     fprintf(fp, "%d\n", *logDate);

@@ -6,8 +6,8 @@ struct node{
     int ProductID;
     double Energy, Carbs, Fat, Protein, ServingSize1, ServingSize2, Servings;
 
-    struct node *right_child; // right child
-    struct node *left_child; // left child
+    struct node *right_child;
+    struct node *left_child;
 };
 
 ///// Taking Input /////
