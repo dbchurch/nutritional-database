@@ -72,3 +72,6 @@ It is important to note that the program only saves to the log at the end. If yo
 
 ### Input String Length
 When reading from the file there are various limitations on the strings length for each variable. Product Names and Manufacturers cannot be larger that 255 characters. Calories, Carbs, Fat, Protein, Product ID, and each of the serving size numbers cannot be any larger than 15 characters. The serving size units can be no larger than 31 characters. Lastly, an entire line can never be larger than 511 characters. All of these limitations comply with the FDA file that has been provided.
+
+### File Access
+If the nutritional database is not present in the folder with the program when the program is run it will close immediately after stating "Loading nutritional data..." with an error. It is also imperative that the log and settings files are not open in another program while the program is run. This will also cause the program to crash and produce another error as well. 
