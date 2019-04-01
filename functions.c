@@ -103,6 +103,7 @@ void printNode(struct node *p, char *use){
     }
 }
 
+//Inspired by Amit Kumar - details in readme.md
 struct node* insert(struct node *root, char *ProductName, char *Manufacturer, char *ServingSize1Units, char *ServingSize2Units, double Energy, double Carbs, double Fat, double Protein, double ServingSize1, double ServingSize2, int ProductID, char *Date, double Servings){
     
     //searching for the place to insert
@@ -187,6 +188,7 @@ struct node* update(struct node *root, char *ProductName, char *Date, double Ser
     return root;
 }
 
+//Inspired by Amit Kumar - details in readme.md
 struct node* find_minimum(struct node *root){
     if(root == NULL)
         return NULL;
@@ -195,6 +197,7 @@ struct node* find_minimum(struct node *root){
     return root;
 }
 
+//Inspired by Amit Kumar - details in readme.md
 struct node* delete(struct node *root, char *ProductName, char *Date, double Servings){
     //searching for the item to be deleted
     if(root==NULL){
@@ -396,6 +399,7 @@ struct node* dfs(struct node *root, struct node *searchresults, char *term, char
     return searchresults;
 }
 
+//Inspired by Amit Kumar - details in readme.md
 struct node* search(struct node *root, struct node *searchresults, char *term){
     if(root==NULL)
     {    
