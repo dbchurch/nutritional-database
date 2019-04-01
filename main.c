@@ -1,188 +1,276 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include "bst.h"
+#include "functions.h"
+
+#define NUMLENGTH 15
+#define NAMELENGTH 255
+#define SSLENGTH 31
+#define LINELENGTH 511
+
 
 int main() {
 
-	struct node* database = new_node("Beascuit", "Let's Get Fiscal", "golden grams", "pieces", 128.10, 123.5, 7, 8.9, 1.0, 1.0, 11553002, "2000-01-01", 0);
-	insert(database, "Bacon", "Benjamin Franklin", "golden grams", "pieces", 128.10, 123.5, 7, 8.9, 1.0, 1.0, 11553003, "2000-01-01", 0);
-	insert(database, "Wine", "Accounts Playable", "golden grams", "pieces", 128.0, 12.5, 7, 0.9, 1.0, 1.0, 11553004, "2000-01-01", 0);
-	insert(database, "Green Beans", "Jennifer Honeycutt", "golden grams", "pieces", 128.10, 123.5, 7, 8.9, 1.90, 1.20, 11553005, "2000-01-01", 0);
-	insert(database, "Babel", "Hand in the Cookie Jar Inc.", "golden grams", "pieces", 128.10, 123.5, 7, 8.9, 1.90, 1.20, 11553006, "2000-01-01", 0);
+	char *name = (char*) malloc (NAMELENGTH*sizeof(char));
+	char *namelog = (char*) malloc (NAMELENGTH*sizeof(char));
+	char *namesettings = (char*) malloc (NAMELENGTH*sizeof(char));
+	char *crud = (char*) malloc (NAMELENGTH*sizeof(char));
+	char *binaryselection = (char*) malloc (NAMELENGTH*sizeof(char));
+	char *searchterm = (char*) malloc (NAMELENGTH*sizeof(char));
+	int selectionNum = 0;
+	int maxselect = 0;
+	double floatNum = 0;
 
-	struct node *currentLog = new_node("NULL", "NULL", "NULL", "NULL", 0, 0, 0, 0, 0, 0, 11553007, "2000-01-01", 0);
+	int logProductName = 40, logManufacturer = 20, logDate = 10, logServings = 10, dbProductName = 60, dbManufacturer = 30;
 
-	////////////////// User Interface //////////////////
-	char *name = (char*) malloc (63*sizeof(char));
-	char *crud = (char*) malloc (63*sizeof(char));
-	char *input = (char*) malloc (63*sizeof(char));
-	char *input2 = (char*) malloc (63*sizeof(char));
-	char *input3 = (char*) malloc (63*sizeof(char));
-	int inputNum = 0;
-	char buffProductID[255],buffProductName[255], buffManufacturer[255], buffEnergy[255], buffCarb[255], buffFat[255], buffProtein[255], buffServingSize1[255], buffServingSize1Units[255], buffServingSize2[255], buffServingSize2Units[255], buffDate[255], buffServings[255];
+	printf("Loading nutritional data...\n");
 
-	printf("Hello! Welcome to your nutirion log! What is your name?\n");
-	scanf("%s", name);
-	
-	
-	//Read in the current contents of the log file.
-	FILE *logFile;
-	strcat(name, ".csv");
+	struct node *database = NULL;
+	database = readIntoBST(database, "food_database.csv", "db");
 
-	logFile = fopen(name, "r"); 
+	printf("\nHello! Welcome to your nutirion log! \nWhat is your name? (This will determine which log your data is stored to and retrieved from.)\n");
+	name = getInput(NAMELENGTH);
+	strncpy(namelog, name, NAMELENGTH);
+	strncpy(namesettings, name, NAMELENGTH);
+	namelog = strcat(strlwr(namelog), ".log");
+	namesettings = strcat(strlwr(namesettings), ".settings");
 
-	//Is the file empty?
-	long fsize = 0;
-	if(logFile != NULL) 
-	{
-		// Go to end of the file
-		fseek(logFile, 0, SEEK_END); 
-		fsize= ftell(logFile);
-	}
-	//Set the pointer back to the front in order to read each line
-	rewind(logFile);
+	readSettings(namesettings, &logProductName, &logManufacturer, &logDate, &logServings, &dbProductName, &dbManufacturer);
 
-	// //Read in the old entries unless the file is empty
-	if(fsize != 0){
-		int flag = fscanf(logFile, "%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~\n]%*[\n]", buffProductName, buffManufacturer, buffEnergy, buffCarb, buffFat, buffProtein, buffServingSize1, buffServingSize1Units, buffServingSize2, buffServingSize2Units, buffProductID, buffDate, buffServings);
-		while(flag != EOF){
-			insert(currentLog, buffProductName, buffManufacturer, buffServingSize1Units, buffServingSize2Units, atof(buffEnergy), atof(buffCarb), atof(buffFat), atof(buffProtein), atof(buffServingSize1), atof(buffServingSize2), atoi(buffProductID), buffDate, atof(buffServings));
-			flag = fscanf(logFile, "%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~\n]%*[\n]", buffProductName, buffManufacturer, buffEnergy, buffCarb, buffFat, buffProtein, buffServingSize1, buffServingSize1Units, buffServingSize2, buffServingSize2Units, buffProductID, buffDate, buffServings);
-		}
-	}
+	struct node *currentLog = NULL;
+	currentLog = readIntoBST(currentLog, namelog, "log");
 
-	currentLog = delete(currentLog, "NULL");
-	fclose(logFile);
+	printf("\nWould you like to 'create', 'retrieve', 'update', or 'delete' a record? (Type the one you would like below, 'quit' to exit or 'change settings' to update the print settings.)\n");
+	crud = strlwr(getInput(NAMELENGTH));
 
-	printf("\nWould you like to 'create', 'retrieve', 'update', or 'delete' a record? (Type the one you would like below or 'quit' to exit.)\n");
-	scanf("%s", crud);
-	crud = strlwr(crud);
+	while(strncmp(crud, "quit", NAMELENGTH)){
+		struct node *searchresults = NULL;
 
-	while(strcmp(crud, "quit")){
-
-		if (strcmp(crud, "create") == 0){
-			struct node *searchresultsC = new_node("A", "NULL", "NULL", "NULL", 0, 0, 0, 0, 0, 0, 11553007, "2000-01-01", 0);
+		if (strncmp(crud, "create", NAMELENGTH) == 0){
+			
 			printf("\nEnter the name of the food you would like to search for below:\n");
-			scanf("%s", input);
-			strcpy(input3, input);
-			input = strlwr(input);
-			search(currentLog, searchresultsC, input);
-			if (searchresultsC->left_child == NULL && searchresultsC->right_child == NULL){
-				printf("\nNothing begins with '%s' so a Depth First Search will be used.", 	input3);
-				dfs(currentLog, searchresultsC, input, input2);
-			}	
-			searchresultsC = delete(searchresultsC, "A");
-
-			printf("\nPlease enter the number of the food you would like to add to your log:\n");
-			printSearchResults(searchresultsC, 0);
-			scanf("%d", &inputNum);
 			
-			struct node *selectedNodeC = selectSearchResults(searchresultsC, 0, inputNum);
-			printf("\nHow many servings did you consume?\n");
-			scanf("%lf", &selectedNodeC->Servings);
-			
-			printf("\nWhat date was this eaten? (enter date in the format 'YYYY-MM-DD')\n");
-			//May want to read this in as three integers before translating it into a string that way it can easily be checked for invalid dates.
-			scanf("%s", input);
-			selectedNodeC->Date = input;
-			printf("\n%s has been added to your log.\n", selectedNodeC->ProductName);
+			searchterm = strlwr(getInput(NAMELENGTH));
 
-			newEntry(selectedNodeC, name);
-			insert(currentLog, selectedNodeC->ProductName, selectedNodeC->Manufacturer, selectedNodeC->ServingSize1Units, selectedNodeC->ServingSize2Units, selectedNodeC->Energy, selectedNodeC->Carbs, selectedNodeC->Fat, selectedNodeC->Protein, selectedNodeC->ServingSize1, selectedNodeC->ServingSize2, selectedNodeC->ProductID, selectedNodeC->Date, selectedNodeC->Servings);
-			deleteBST(searchresultsC);
+			searchresults = search(database, searchresults, searchterm);
+
+			if (searchresults == NULL){
+				//Nothing starts with the searched string so a depth first search will be used.
+				searchresults = dfs(database, searchresults, searchterm, "food");
+			}
+
+			if (searchresults == NULL){
+				printf("\nThere is no food in the database with that name.\n");
+			}
+			else {
+				printf("\nPlease enter the number of the food you would like to add to your log:\n");
+
+				maxselect = printOptions(searchresults, 0, "db", logProductName, logManufacturer, logDate, logServings, dbProductName,  dbManufacturer);
+				selectionNum = validateSelection(validateNum(getInput(NAMELENGTH)), maxselect);
+
+				struct node *selectedNode = malloc(sizeof(struct node));
+				selectOption(searchresults, selectedNode, 0, selectionNum);
+				printNode(selectedNode, "db");
+				printf("\nHow many servings did you consume?\n");
+
+				selectedNode->Servings = validateFloat(getInput(NAMELENGTH));
+				
+				printf("\nWhat date was this eaten? (enter date in the format 'YYYY-MM-DD')\n");
+				selectedNode->Date = validateDate(getInput(NAMELENGTH));
+
+				printf("\n%s has been added to your log.\n", selectedNode->ProductName);
+
+				currentLog = insert(currentLog, selectedNode->ProductName, selectedNode->Manufacturer, selectedNode->ServingSize1Units, selectedNode->ServingSize2Units, selectedNode->Energy * selectedNode->Servings, selectedNode->Carbs * selectedNode->Servings, selectedNode->Fat * selectedNode->Servings, selectedNode->Protein * selectedNode->Servings, selectedNode->ServingSize1, selectedNode->ServingSize2, selectedNode->ProductID, selectedNode->Date, selectedNode->Servings);
+
+			}
 		}
 
-		else if (strcmp(crud, "retrieve") == 0){
+		else if ((strncmp(crud, "retrieve", NAMELENGTH) == 0) && currentLog != NULL){
 		
-			printf("\nHow would you like to retrieve your data? (Searching by 'date' or 'food')\n");
-			scanf("%s", input2);
-			input2 = strlwr(input2);
+			printf("\nHow would you like to retrieve your data? Searching by 'food' or 'date'? (Enter 'food' or 'date'.)\n");
+			 
+			binaryselection = validateBinary(strlwr(getInput(NAMELENGTH)), "food", "date");
 
-			struct node *searchresultsR = new_node("A", "NULL", "NULL", "NULL", 0, 0, 0, 0, 0, 0, 11553007, "2000-01-01", 0);
-			if (strcmp(input2, "food") == 0){
+			if (strncmp(binaryselection, "food", NAMELENGTH) == 0){
 				printf("\nEnter the name of the food in the entry you are searching for:\n");
-				scanf("%s", input);
-				strcpy(input3, input);
-				input = strlwr(input);
-				search(currentLog, searchresultsR, input);
-				if (searchresultsR->left_child == NULL && searchresultsR->right_child == NULL){
-					printf("\nNothing begins with '%s' so a Depth First Search will be used.", input3);
-					dfs(currentLog, searchresultsR, input, input2);
+				searchterm = strlwr(getInput(NAMELENGTH));
+
+				searchresults = search(currentLog, searchresults, searchterm);
+				if (searchresults == NULL){
+					//Nothing starts with the searched string so a depth first search will be used.
+					searchresults = dfs(currentLog, searchresults, searchterm, binaryselection);
 				}
 			}
-			else if (strcmp(input2, "date") == 0){
+			else if (strncmp(binaryselection, "date", NAMELENGTH) == 0){
 				printf("\nEnter the date of the entry you are searching for:\n");
-				scanf("%s", input);
-				dfs(currentLog, searchresultsR, strlwr(input), input2);
+				searchterm = validateDate(getInput(NAMELENGTH));
+				searchresults = dfs(currentLog, searchresults, searchterm, binaryselection);
 			}
 
-			searchresultsR = delete(searchresultsR, "A");
+			if (searchresults == NULL){
+				printf("\nThere is no entry in the log '%s' with that %s.\n", namelog, binaryselection);
+			}
+			else {
+				
+				maxselect = printOptions(searchresults, 0, "log", logProductName, logManufacturer, logDate, logServings, dbProductName,  dbManufacturer);
+				printf("\nPlease enter the number of the entry you would like to view:\n");
+				selectionNum = validateSelection(validateNum(getInput(NAMELENGTH)), maxselect);
 
-			printf("\nPlease enter the number of the entry you would like to view:\n");
-			printSearchResults(searchresultsR, 0);
-			scanf("%d", &inputNum);
-
-			struct node *selectedNodeR = selectSearchResults(searchresultsR, 0, inputNum);
-			printf("Date: %s\n", selectedNodeR->Date);
-			printf("Servings: %.2f\n", selectedNodeR->Servings);
-			deleteBST(searchresultsR);
+				struct node *selectedNode = malloc(sizeof(struct node));
+				selectOption(searchresults, selectedNode, 0, selectionNum);
+				printNode(selectedNode, "log");
+			}	
 		}
 
+		else if ((strncmp(crud, "update", NAMELENGTH) == 0) && currentLog != NULL){
+			printf("\nHow would you like to find the entry you would like to update? By 'food' or 'date'? (Enter 'food' or 'date'.)\n");
 
-		// printf("\n~~~%d~~~\n", strncmp("Wine", "Wineday", 3));
-		// printf("\n~~~%ld~~~\n", strlen("Wine"));
+			binaryselection = validateBinary(strlwr(getInput(NAMELENGTH)), "food", "date");
 
-		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		// else if (strcmp(crud, "update") == 0){
-		// 	printf("Update data from their log.");
-		// }
-		// else if (strcmp(crud, "delete") == 0){
-		// 	printf("Delete data from their log.");
-		// }
-		// else {
-		// 	printf("Create an error catch here becasue the command is not recognized. String you entered is: %s", crud);
-		// }
+			if (strncmp(binaryselection, "food", NAMELENGTH) == 0){
+				printf("\nEnter the name of the food in the entry you wish to update:\n");
+				searchterm = strlwr(getInput(NAMELENGTH));
 
-		printf("\nWould you like to 'create', 'retrieve', 'update', or 'delete' a record? (Type the one you would like below or 'quit' to exit.)\n");
-		scanf("%s", crud);
-		crud = strlwr(crud);
+				searchresults = search(currentLog, searchresults, searchterm);
+				if (searchresults == NULL){
+					//Nothing starts with the searched string so a depth first search will be used.
+					searchresults = dfs(currentLog, searchresults, searchterm, binaryselection);
+				}
+			}
+			else if (strncmp(binaryselection, "date", NAMELENGTH) == 0){
+				printf("\nEnter the date of the entry you would like to update:\n");
+				searchterm = validateDate(getInput(NAMELENGTH));
+				 
+				searchresults = dfs(currentLog, searchresults, searchterm, binaryselection);
+			}
+
+			if (searchresults == NULL){
+				printf("\nThere is no entry in the log '%s' with that %s.\n", namelog, binaryselection);
+			}
+			else {
+				printf("\nPlease enter the number of the entry you would like to update:\n");
+				maxselect = printOptions(searchresults, 0, "log", logProductName, logManufacturer, logDate, logServings, dbProductName,  dbManufacturer);
+				selectionNum = validateSelection(validateNum(getInput(NAMELENGTH)), maxselect);
+
+				struct node *selectedNode = malloc(sizeof(struct node));
+				selectOption(searchresults, selectedNode, 0, selectionNum);
+				printNode(selectedNode, "log");
+
+				printf("\nWould you like to update the 'date' or the number of 'servings'? (Enter 'date' or 'servings'.)\n");
+				binaryselection = validateBinary(strlwr(getInput(NAMELENGTH)), "date", "servings");
+
+				if(strncmp(binaryselection, "date", NAMELENGTH) == 0){
+					printf("\nWhat would you like the updated date to be? Please enter in the format of 'YYYY-MM-DD'.\n");
+					searchterm = validateDate(getInput(NAMELENGTH));
+					 
+					update(currentLog, selectedNode->ProductName, selectedNode->Date, selectedNode->Servings, searchterm, selectedNode->Servings);
+				}
+				else if (strncmp(binaryselection, "servings", NAMELENGTH) == 0){
+					printf("\nWhat would you like the updated amount of servings to be?\n");
+					floatNum = validateFloat(getInput(NAMELENGTH));
+
+					update(currentLog, selectedNode->ProductName, selectedNode->Date, selectedNode->Servings, selectedNode->Date, floatNum);
+				}
+			}
+		}
+
+		else if ((strncmp(crud, "delete", NAMELENGTH) == 0) && currentLog != NULL){
+
+			printf("\nHow would you like to find the entry you would like to delete? By 'food' or 'date'? (Enter 'food' or 'date'.)\n");
+			binaryselection = validateBinary(strlwr(getInput(NAMELENGTH)), "food", "date");
+
+			if (strncmp(binaryselection, "food", NAMELENGTH) == 0){
+				printf("\nEnter the name of the food in the entry you wish to delete:\n");
+				searchterm = strlwr(getInput(NAMELENGTH));
+
+				searchresults = search(currentLog, searchresults, searchterm);
+				if (searchresults == NULL){
+					//Nothing starts with the searched string so a depth first search will be used.
+					searchresults = dfs(currentLog, searchresults, searchterm, binaryselection);
+				}
+			}
+			else if (strncmp(binaryselection, "date", NAMELENGTH) == 0){
+				printf("\nEnter the date of the entry you are searching for:\n");
+				searchterm = getInput(NAMELENGTH);
+				 
+				searchresults = dfs(currentLog, searchresults, searchterm, binaryselection);
+			}
+
+			if (searchresults == NULL){
+				printf("\nThere is no entry in the log '%s' with that %s.\n", namelog, binaryselection);
+			}
+			else {
+				printf("\nPlease enter the number of the entry you would like to delete:\n");
+				maxselect = printOptions(searchresults, 0, "log", logProductName, logManufacturer, logDate, logServings, dbProductName,  dbManufacturer);
+				selectionNum = validateSelection(validateNum(getInput(NAMELENGTH)), maxselect);
+
+				struct node *selectedNode = malloc(sizeof(struct node));
+				selectOption(searchresults, selectedNode, 0, selectionNum);
+
+				printf("\nThe entry shown below has been deleted:\n");
+				printNode(selectedNode, "log");
+
+				currentLog = delete(currentLog, selectedNode->ProductName, selectedNode->Date, selectedNode->Servings);
+	
+			}
+
+
+		}
+
+		else if (strncmp(crud, "change settings", NAMELENGTH) == 0){
+			printf("\nHere you can change the settings for how the log table and database table are presented when searching.\n");
+			printf("\nWould you like to update how the 'log' or 'database' is presented? (Enter 'log' or 'database'.)\n");
+			binaryselection = validateBinary(strlwr(getInput(NAMELENGTH)), "database", "log");
+			if(strncmp(binaryselection, "log", NAMELENGTH) == 0){
+				printf("\nWould you like to update the width of the 'product name' or  'manufacturer'? (Enter 'product name' or 'manufacturer'.)\n");
+				binaryselection = validateBinary(strlwr(getInput(NAMELENGTH)), "product name", "manufacturer");
+				if(strncmp(binaryselection, "product name", NAMELENGTH) == 0){
+					printf("\nWhat would you like to update the table width of the product name to?\n");
+					logProductName = validateNum(getInput(NUMLENGTH)); 
+				}
+				else if(strncmp(binaryselection, "manufacturer", NAMELENGTH) == 0){
+					printf("\nWhat would you like to update the table width of the manufacturer to?\n");
+					logManufacturer = validateNum(getInput(NUMLENGTH)); 
+				}
+			}
+			else if (strncmp(binaryselection, "database", NAMELENGTH) == 0){
+				printf("\nWould you like to update the width of the 'product name' or  'manufacturer'? (Enter 'product name' or 'manufacturer'.)\n");
+				binaryselection = validateBinary(strlwr(getInput(NAMELENGTH)), "product name", "manufacturer");
+				if(strncmp(binaryselection, "product name", NAMELENGTH) == 0){
+					printf("\nWhat would you like to update the table width of the product name to?\n");
+					dbProductName = validateNum(getInput(NUMLENGTH)); 
+				}
+				else if(strncmp(binaryselection, "manufacturer", NAMELENGTH) == 0){
+					printf("\nWhat would you like to update the table width of the manufacturer to?\n");
+					dbManufacturer = validateNum(getInput(NUMLENGTH)); 
+				}
+			}
+			updateSettings(namesettings, &logProductName, &logManufacturer, &logDate, &logServings, &dbProductName, &dbManufacturer);
+		}
+
+		else {
+			if (currentLog == NULL){
+				printf("\nThe log is empty, so 'create' is currently the only available functinality.\n");
+			}
+			else {
+				printf("\n%s is not a valid input.\n", crud);
+			}
+		}
+
+		//Free all the search results tree after each run through the CRUD system
+		deleteBST(searchresults);
+
+		printf("\nWould you like to 'create', 'retrieve', 'update', or 'delete' a record? (Type the one you would like below, 'quit' to exit or 'change settings' to update the print settings.)\n");
+		crud = strlwr(getInput(NAMELENGTH));
 	}
 
+	//Before the log is written to at the end the old log is deleted ensuring that a clean write will be made without any left over data from an older version
+	remove(namelog);
 
-
-	//Prompt for who is using the program, this will affect which log will be accessed. Or if it is a new person.
-		//Read all of the logs that are in the current folder by name and then the user can select if they are present or if they are new
-
-	//While (input != 'quit')
-		// Would you like to add (type 'add'), delete (type 'del'), review (type 'rev') or update (type 'upd') an entry in your nutritional diary? (If you are finished type 'quit')
-
-		//If structure to use each of the CRUD features.
-
-
-	// ////////////////// Read in the File //////////////////
-
-	// printf("Loading nutritional data...");
-
-	// FILE *fp;
-	
-
-	// fp = fopen("food_nutrient_db.csv", "r"); //Open the nutritional database file.
-
-	// // For - all lines, read in these data points
-	// 	//Read them into objects that are part of a linked list?
-
-	// for (int i = 0; i < 2000; i++){
-	
-	// 	fscanf(fp, "%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~]%*[~]%[^~\n]%*[\n]", buffProductID,buffProductName, buffManufacturer, buffEnergy, buffCarb, buffFat, buffProtein, buffServingSize1, buffServingSize1Units, buffServingSize2, buffServingSize2Units);
-	// 	printf("%s\t", buffProductID);
-	// }
-	
-
-	// fclose(fp); //Close the nutritional database file.
-
-
+	FILE *Log;
+    Log = fopen(namelog, "ab+"); 
+	writeFromBST(currentLog, Log);
+	fclose(Log);
 
 	return 0;
 }

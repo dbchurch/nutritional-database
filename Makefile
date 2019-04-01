@@ -1,5 +1,5 @@
-nutritiondiary:	main.c bst.c
-	gcc -Wall -o main main.c bst.c
+nutritiondiary:	main.c functions.c
+	gcc -Wall -std=c11 -o main main.c functions.c
 
 clean:
 	rm -f  main
