@@ -291,11 +291,15 @@ struct node *readIntoBST(struct node *tree, char *filename, char* reading){
     FILE *fp;
 
     if (strncmp(reading, "log", NAMELENGTH) == 0){
-        fp = fopen(filename, "ab+");
+        if ((fp = fopen(filename, "ab+")) == NULL){
+            printf("\nUnable to open the log file, exiting now.\n");
+        }
         rewind(fp); //ab+ opens the file and points to the end, rewind it to the top
     }
     else {
-        fp = fopen(filename, "r");
+        if ((fp = fopen(filename, "r")) == NULL){
+            printf("\nUnable to open the database file, exiting now.\n");
+        }
     }
 
     char *lineDB = (char*) malloc (LINELENGTH*sizeof(char));
